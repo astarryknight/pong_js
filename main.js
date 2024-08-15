@@ -71,7 +71,7 @@ function draw(ball, p_one, p_two) {
     }
 }
 
-var gameSpeed=25;
+var gameSpeed=5;
 var speed=gameSpeed; //inverse scale - lower number = faster speed
 
 function getRandomInt(max) {
@@ -86,7 +86,6 @@ function getMousePosition(canvas, event) {
     if(y>=(0+offset) && y<=(canvasHeight-offset)){
         player.yPos = y-offset;
     } else if (y>=(0+offset)){
-        console.warn("hi there");
         player.yPos=canvasHeight-player.height;
     } else if (y<=(canvasHeight-offset)){
         player.yPos = 0;
@@ -101,13 +100,33 @@ document.addEventListener('mousemove', function(e){
 
 var start=Date.now();
 var gameOver=false;
+var xMove=3;
+var yMove=-5;
 
 //main game loop
 function loop(){
     var now = Date.now();
+    checkCollisions();
     if((now-start)>=speed){
-        
+
+        ball.xPos+=xMove
+        ball.yPos+=yMove
+
+        let offset=comp.height/2
+        if(ball.yPos>=(0+offset) && ball.yPos<=(canvasHeight-offset)){
+            comp.yPos = ball.yPos-offset;
+        } else if (ball.yPos>=(0+offset)){
+            comp.yPos=canvasHeight-comp.height;
+        } else if (ball.yPos<=(canvasHeight-offset)){
+            comp.yPos = 0;
+        }
+
         start=now;
+
+        if(ball.xPos>canvasWidth-ball.height){
+            //ball is to the left or right of the canvas
+            gameOver=true;
+        }
     }
     draw(ball, player, comp);
     if(!gameOver){
@@ -121,14 +140,40 @@ function loop(){
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-function checkPipeCollision(pipe){
-    if(bird.xPos < pipe.xPos+pipe.width &&
-        bird.xPos+bird.width > pipe.xPos &&
-        bird.yPos < pipe.yPos + pipe.width && 
-        bird.yPos + bird.width > pipe.yPos){
-            return true;
+// function resetGame(){
+//     ball.xPos=canvasWidth/2;
+//     ball.yPos=canvasHeight/2;
+//     speed=gameSpeed;
+//     xMove=3;
+//     yMove=-5;
+// }
+
+function checkCollisions () {
+    if(ball.yPos>(canvasHeight-ball.height)){
+        //ball is below the canvas
+        ball.yPos=(canvasHeight-ball.height);
+        yMove=-yMove;
+        speed*=0.925;
+    } else if(ball.yPos<0){
+        //ball is above the canvas
+        ball.yPos=(0);
+        yMove=-yMove;
+        speed*=0.925
+    } else if(ball.xPos+ball.height>player.xPos){
+        //ball is going into the paddle (presumably)
+        if(ball.yPos>player.yPos && ball.yPos+ball.height < player.yPos+player.height){
+            xMove=-xMove
+            ball.xPos=player.xPos-ball.height
+            speed*=0.9
+        }
+    } else if(ball.xPos<comp.xPos+paddleWidth){
+        //ball is going into comp paddle (presumably)
+        if(ball.yPos>comp.yPos && ball.yPos+ball.height < comp.yPos+comp.height){
+            ball.xPos=comp.xPos+ball.height
+            xMove=-xMove
+            speed*=0.9
+        }
     }
-    return false;
 }
 
-window.requestAnimationFrame(loop)
+window.requestAnimationFrame(loop);
