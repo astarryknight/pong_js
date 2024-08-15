@@ -47,6 +47,9 @@ var comp = new Paddle(10, 600, 135)
 
 var paddleWidth=20;
 
+var canvasHeight=750;
+var canvasWidth=750;
+
 function draw(ball, p_one, p_two) {
     const canvas = document.getElementById("canvas");
     if (canvas.getContext) {
@@ -74,6 +77,27 @@ var speed=gameSpeed; //inverse scale - lower number = faster speed
 function getRandomInt(max) {
     return Math.floor(Math.random() * max);
 }
+
+function getMousePosition(canvas, event) {
+    let rect = canvas.getBoundingClientRect();
+    let x = event.clientX - rect.left;
+    let y = event.clientY - rect.top;
+    let offset=player.height/2
+    if(y>=(0+offset) && y<=(canvasHeight-offset)){
+        player.yPos = y-offset;
+    } else if (y>=(0+offset)){
+        console.warn("hi there");
+        player.yPos=canvasHeight-player.height;
+    } else if (y<=(canvasHeight-offset)){
+        player.yPos = 0;
+    }
+
+}
+//https://www.geeksforgeeks.org/how-to-get-the-coordinates-of-a-mouse-click-on-a-canvas-element/
+
+document.addEventListener('mousemove', function(e){
+    getMousePosition(canvas, e);
+})
 
 var start=Date.now();
 var gameOver=false;
